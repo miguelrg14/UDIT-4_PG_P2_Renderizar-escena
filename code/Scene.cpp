@@ -1,6 +1,6 @@
 ﻿
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #pragma once
 
@@ -25,162 +25,218 @@
 
 #include "opengl-recipes.hpp"
 
+#include "AssimpMesh.hpp"
+
 using namespace std;
 using namespace glm;
 
 namespace udit
 {
-    const string Scene::vertex_shader_code =
-        "#version 330\n"
-        ""
-        // Definición del struct que describe una luz puntual
-        "struct Light {\n"
-        "    vec4 position;\n"        // Posición de la luz en espacio ojo (eye-space)
-        "    vec3 color;\n"           // Color/intensidad de la luz (RGB)
-        "};"
-        ""
-        // Matrices uniformes enviadas desde la CPU/C++
-        "uniform mat4 model_view_matrix;\n"   // Modelo + vista: lleva coordenadas de modelo a eye-space
-        "uniform mat4 projection_matrix;\n"   // Proyección de cámara (perspectiva u ortográfica)
-        "uniform mat4 normal_matrix;\n"       // Matriz para transformar normales correctamente
-        ""
-        // Parámetros de iluminación especular
-        "uniform float specular_intensity;\n" // Intensidad global del componente especular
-        "uniform float shininess;\n"          // Exponente de “dureza” del brillo
-        "uniform vec3  specular_color;\n"     // Color del brillo especular
-        ""
-        // Parámetros de la luz y los componentes
-        "uniform Light light;\n"              // Datos de la luz (posición + color)
-        "uniform float ambient_intensity;\n"  // Intensidad de luz ambiental
-        "uniform float diffuse_intensity;\n"  // Intensidad de luz difusa
-        ""
-        // Propiedades del material
-        "uniform vec3 material_color;\n"      // Color base del material (difuso)
-        ""
-        // Niebla: rango y color
-        "uniform float fog_near;\n"           // distancia mínima donde empieza a entrar la niebla
-        "uniform float fog_far;\n"            // distancia a la que la niebla ya es completa
-        "uniform vec3  fog_color;\n"          // color de la niebla
-        ""
-        // Atributos de vértice (entradas del VAO)
-        "layout(location = 0) in vec3 vertex_coordinates;\n"
-        "layout(location = 1) in vec3 vertex_normal;\n"
-        "layout(location = 2) in vec2 vertex_uv;\n"
-        ""
-        // Salidas al fragment shader
-        "out vec3  front_color;\n"            // color iluminado (sin texturizar)
-        "out vec2  texture_uv;\n"             // pasamos las coordenadas UV
-        "out float fog_factor;\n"             // intensidad de la niebla [0..1]
-        ""
-        "void main() {\n"
-        // 1) Transformar posición a eye-space
-        "    vec4 pos_view = model_view_matrix * vec4(vertex_coordinates, 1.0);\n"
-        ""
-        // 2) Iluminación Phong (ambient + diffuse + specular)
-        "    vec3 N = normalize((normal_matrix * vec4(vertex_normal, 0.0)).xyz);\n"
-        "    vec3 L = normalize((light.position - pos_view).xyz);\n"
-        "    vec3 V = normalize(-pos_view.xyz);\n"
-        "    float diff = diffuse_intensity * max(dot(N, L), 0.0);\n"
-        "    vec3 H = normalize(L + V);\n"
-        "    float spec = specular_intensity * pow(max(dot(N, H), 0.0), shininess);\n"
-        ""
-        // 3) Componente iluminado sin texturizar
-        "    vec3 lit_color = ambient_intensity * material_color\n"
-        "                   + diff * light.color * material_color\n"
-        "                   + spec * specular_color;\n"
-        ""
-        // 4) Cálculo del factor de niebla según la distancia en eye-space
-        "    float d = -pos_view.z;  // distancia desde la cámara (eye-space)\n"
-        "    fog_factor = clamp((d - fog_near) / (fog_far - fog_near), 0.0, 1.0);\n"
-        ""
-        // 5) Pasar al fragment shader sin mezclar aún con la niebla
-        "    front_color = lit_color;\n"
-        "    texture_uv  = vertex_uv;\n"
-        ""
-        // 6) Posición final en clip-space
-        "    gl_Position = projection_matrix * pos_view;\n"
-        "}";
+    const std::string Scene::vertex_shader_code = 
+        R"(
+            #version 330
 
-    const string Scene::fragment_shader_code =
-        "#version 330\n"
-        ""
-        // Textura y niebla
-        "uniform sampler2D sampler;\n"        // unidad 0: tu textura 2D
-        "uniform vec3      fog_color;\n"      // color de la niebla
-        ""
-        // Entradas desde el vertex shader
-        "in  vec2  texture_uv;\n"
-        "in  vec3  front_color;\n"            // color iluminado (RGB)
-        "in  float fog_factor;\n"             // [0 = limpio, 1 = niebla completa]
-        ""
-        // Salida
-        "out vec4 fragment_color;\n"
-        ""
-        "void main() {\n"
-        // Si ya estamos en niebla completa, descartamos el fragmento
-        "    if (fog_factor >= 1.0)\n"
-        "        discard;\n"    // desaparece en la niebla
-        ""        
-        "    vec4 texcol = texture(sampler, texture_uv);\n"             // 1) Muestreamos la textura (rgba)
-        ""        
-        "    vec3 littex = front_color * texcol.rgb;\n"                 // 2) Iluminación * textura.rgb
-        ""        
-        "    vec3 final_rgb   = mix(littex, fog_color, fog_factor);\n"  // 3) Mezcla RGB con el color de la niebla
-        ""        
-        "    float final_alpha = texcol.a * (0.5 - fog_factor);\n"      // 4) Atenuar el αlpha original según la niebla
-        ""        
-        "    fragment_color = vec4(final_rgb, final_alpha);\n"          // Resultado final: color + transparencia progresiva
-        "}";
+            // Definición del struct que describe una luz puntual
+            struct Light
+            {
+                vec4 position;        // Posición de la luz en espacio ojo (eye-space)
+                vec3 color;           // Color/intensidad de la luz (RGB)
+            };
+
+            // Matrices uniformes enviadas desde la CPU/C++
+            uniform mat4 model_view_matrix;   // Modelo + vista: lleva coordenadas de modelo a eye-space
+            uniform mat4 projection_matrix;   // Proyección de cámara (perspectiva u ortográfica)
+            uniform mat4 normal_matrix;       // Matriz para transformar normales correctamente
+
+            // Parámetros de iluminación especular
+            uniform float specular_intensity; // Intensidad global del componente especular
+            uniform float shininess;          // Exponente de “dureza” del brillo
+            uniform vec3  specular_color;     // Color del brillo especular
+
+            // Parámetros de la luz y los componentes
+            uniform Light light;              // Datos de la luz (posición + color)
+            uniform float ambient_intensity;  // Intensidad de luz ambiental
+            uniform float diffuse_intensity;  // Intensidad de luz difusa
+
+            // Propiedades del material
+            uniform vec3 material_color;      // Color base del material (difuso)
+
+            // Niebla: rango y color
+            uniform float fog_near;           // distancia mínima donde empieza a entrar la niebla
+            uniform float fog_far;            // distancia a la que la niebla ya es completa
+            uniform vec3  fog_color;          // color de la niebla
+
+            // Atributos de vértice (entradas del VAO)
+            layout(location = 0) in vec3 vertex_coordinates;
+            layout(location = 1) in vec3 vertex_normal;
+            layout(location = 2) in vec2 vertex_uv;
+
+            // Salidas al fragment shader
+            out vec3  front_color;            // color iluminado (sin texturizar)
+            out vec2  texture_uv;             // pasamos las coordenadas UV
+            out float fog_factor;             // intensidad de la niebla [0..1]
+
+            void main() 
+            {
+                // 1) Transformar posición a eye-space
+                vec4 pos_view = model_view_matrix * vec4(vertex_coordinates, 1.0);
+
+                // 2) Iluminación Phong (ambient + diffuse + specular)
+                vec3 N = normalize((normal_matrix * vec4(vertex_normal, 0.0)).xyz);
+                vec3 L = normalize((light.position - pos_view).xyz);
+                vec3 V = normalize(-pos_view.xyz);
+                float diff = diffuse_intensity * max(dot(N, L), 0.0);
+                vec3 H = normalize(L + V);
+                float spec = specular_intensity * pow(max(dot(N, H), 0.0), shininess);
+
+                // 3) Componente iluminado sin texturizar
+                vec3 lit_color = ambient_intensity * material_color
+                               + diff * light.color * material_color
+                               + spec * specular_color;
+
+                // 4) Cálculo del factor de niebla según la distancia en eye-space
+                float d = -pos_view.z;  // distancia desde la cámara (eye-space)
+                fog_factor = clamp((d - fog_near) / (fog_far - fog_near), 0.0, 1.0);
+
+                // 5) Pasar al fragment shader sin mezclar aún con la niebla
+                front_color = lit_color;
+                texture_uv  = vertex_uv;
+
+                // 6) Posición final en clip-space
+                gl_Position = projection_matrix * pos_view;
+            }
+        )";
+
+    const std::string Scene::fragment_shader_code = 
+        R"(
+            #version 330
+
+            // Textura y niebla
+            uniform sampler2D sampler;        // unidad 0: tu textura 2D
+            uniform vec3      fog_color;      // color de la niebla
+
+            // Entradas desde el vertex shader
+            in  vec2  texture_uv;
+            in  vec3  front_color;            // color iluminado (RGB)
+            in  float fog_factor;             // [0 = limpio, 1 = niebla completa]
+
+            // Salida
+            out vec4 fragment_color;
+
+            void main() 
+            {
+                // Si ya estamos en niebla completa, descartamos el fragmento
+                if (fog_factor >= 1.0)
+                {
+                    discard;    // desaparece en la niebla
+                }
+
+                vec4 texcol = texture(sampler, texture_uv);             // 1) Muestreamos la textura (rgba)
+
+                vec3 littex = front_color * texcol.rgb;                 // 2) Iluminación * textura.rgb
+
+                vec3 final_rgb   = mix(littex, fog_color, fog_factor);  // 3) Mezcla RGB con el color de la niebla
+
+                float final_alpha = texcol.a * (0.5 - fog_factor);      // 4) Atenuar el αlpha original según la niebla
+
+                // fragment_color = vec4(final_rgb, final_alpha);          // Resultado final: color + transparencia progresiva
+
+                fragment_color = vec4(front_color, 1.0);
+            }
+        )";
 
     /// Vertex Shader para renderizar el quad de post-procesado
-    const string Scene::effect_vertex_shader_code =
+    const std::string Scene::effect_vertex_shader_code = 
+        R"(
+            #version 330
 
-        "#version 330\n"
-        ""
-        /// Atributos de entrada (VAO):
-        "layout (location = 0) in vec3 vertex_coordinates;" // Posición del vértice en clip-space (-1 a +1)
-        "layout (location = 1) in vec2 vertex_texture_uv;"  // Coordenadas UV para muestrear la textura
-        ""
-        /// Salida al fragment shader:
-        "out vec2 texture_uv;"  // Se pasa la UV para usar en el muestreo
-        ""
-        "void main()"
-        "{"
-        // 1) Asigna la posición directamente (ya está en clip-space)
-        "   gl_Position = vec4(vertex_coordinates, 1.0);"
-        // 2) Propaga el UV al fragment shader
-        "   texture_uv  = vertex_texture_uv;"
-        "}";
+            /// Atributos de entrada (VAO):
+            layout (location = 0) in vec3 vertex_coordinates; // Posición del vértice en clip-space (-1 a +1)
+            layout (location = 1) in vec2 vertex_texture_uv;  // Coordenadas UV para muestrear la textura
+
+            /// Salida al fragment shader:
+            out vec2 texture_uv;  // Se pasa la UV para usar en el muestreo
+
+            void main()
+            {
+                // 1) Asigna la posición directamente (ya está en clip-space)
+                gl_Position = vec4(vertex_coordinates, 1.0);
+                // 2) Propaga el UV al fragment shader
+                texture_uv  = vertex_texture_uv;
+            }
+        )";
 
     /// Fragment Shader de ejemplo para un efecto simple
-    const string Scene::effect_fragment_shader_code =
-        "#version 330\n"
-        ""
-        /// Uniform para la textura renderizada en el framebuffer
-        "uniform sampler2D sampler2d;"
-        ""
-        /// Entrada desde el vertex shader:
-        "in  vec2 texture_uv;"      // Coordenadas UV interpoladas
+    const std::string Scene::effect_fragment_shader_code = 
+        R"(
+            #version 330
 
-        /// Salida del fragment shader:
-        "out vec4 fragment_color;"  // Color final del fragmento
-        ""
-        "void main()"
-        "{"
-        /// Ejemplo de efecto: tono sepia amortiguado
-        //// 1) Muestreamos el color original de la textura
-        //"   vec3 color = texture (sampler2d, texture_uv.st).rgb;"
-        //// 2) Convertimos a intensidad luminosa promedio
-        //"   float i = (color.r + color.g + color.b) * 0.3333333333;"
-        //// 3) Aplicamos un tinte amarronado (sepia suave)
-        //"   vec3 sepia = vec3(1.0, 0.75, 0.5);"
-        //"   fragment_color = vec4(vec3(i, i, i) * sepia, 1.0);"
-        
-        /// Alternativa: (Aplicar textura original sin modificaciones)
-        "   fragment_color = texture(sampler2d, texture_uv);"
-        "}";
+            /// Uniform para la textura renderizada en el framebuffer
+            uniform sampler2D sampler2d;
+
+            /// Entrada desde el vertex shader:
+            in  vec2 texture_uv;      // Coordenadas UV interpoladas
+
+            /// Salida del fragment shader:
+            out vec4 fragment_color;  // Color final del fragmento
+
+            void main()
+            {
+                /// Ejemplo de efecto: tono sepia amortiguado
+                //// 1) Muestreamos el color original de la textura
+                //   vec3 color = texture (sampler2d, texture_uv.st).rgb;
+                //// 2) Convertimos a intensidad luminosa promedio
+                //   float i = (color.r + color.g + color.b) * 0.3333333333;
+                //// 3) Aplicamos un tinte amarronado (sepia suave)
+                //   vec3 sepia = vec3(1.0, 0.75, 0.5);
+                //   fragment_color = vec4(vec3(i, i, i) * sepia, 1.0);
+
+                /// Alternativa: (Aplicar textura original sin modificaciones)
+                fragment_color = texture(sampler2d, texture_uv);
+            }
+        )";
+
+    // definición de los dos static members
+    const std::string udit::Scene::terrain_vertex_shader_code = 
+        R"(
+            #version 330
+
+            uniform mat4 model_view_matrix;
+            uniform mat4 projection_matrix;
+
+            layout(location = 0) in vec2 vertex_xz;
+            layout(location = 1) in vec2 vertex_uv;
+
+            uniform sampler2D sampler;
+            uniform float     max_height;
+
+            out float intensity;
+
+            void main()
+            {
+                float sample = texture(sampler, vertex_uv).r;
+                intensity    = sample * 0.75 + 0.25;
+                float height = sample * max_height;
+                vec4  xyzw   = vec4(vertex_xz.x, height, vertex_xz.y, 1.0);
+
+                gl_Position  = projection_matrix * model_view_matrix * xyzw;
+            }
+        )";
+    const std::string udit::Scene::terrain_fragment_shader_code = 
+        R"(
+            #version 330
+
+            in  float intensity;
+            out vec4  fragment_color;
+
+            void main()
+            {
+                fragment_color = vec4(intensity, intensity, intensity, 1.0);
+            }
+        )";
 
     const string Scene::texture_path = "../assets/Stone_Base_Color.png";
+    const string Scene::texture_path_terrain = "../assets/height-map.png";
 
     Scene::Scene(unsigned width, unsigned height)
         : 
@@ -189,19 +245,45 @@ namespace udit
         angle(0),
         terrain(10.f, 10.f, 50, 50)
     {
+        /// Grafo
+        rootNode = std::make_unique<SceneNode>();
+
+        /// Terreno
+        // 1) Compilar shaders del terreno
+        terrain_program_id = compile_shaders(terrain_vertex_shader_code,terrain_fragment_shader_code);
+
+        // 2) Cargar la textura de alturas (canal R de un PNG, por ejemplo)
+        height_texture_id = create_texture_2d<GLuint>("../assets/height-map.png");
+
+        // 3) Configurar uniforms estáticos
+        glUseProgram(terrain_program_id);
+        // sampler en la unidad 1
+        GLint loc = glGetUniformLocation(terrain_program_id, "sampler");
+        glUniform1i(loc, 1);
+        // altura máxima = 5 unidades (o el valor que quieras)
+        loc = glGetUniformLocation(terrain_program_id, "max_height");
+        glUniform1f(loc, 5.0f);
+        ///
+
         /// Postprocesado
         // Se crea la textura y se dibuja algo en ella:
         build_framebuffer();
 
         // Se compilan y se activan los shaders:
-        program_id = compile_shaders(vertex_shader_code, fragment_shader_code);
+               program_id = compile_shaders(vertex_shader_code, fragment_shader_code);
         effect_program_id = compile_shaders(effect_vertex_shader_code, effect_fragment_shader_code);
 
         glUseProgram(program_id);
 
+        /// Ids del shader
+        // Modelos
         model_view_matrix_id = glGetUniformLocation(program_id, "model_view_matrix");
         projection_matrix_id = glGetUniformLocation(program_id, "projection_matrix");
-            normal_matrix_id = glGetUniformLocation(program_id,     "normal_matrix");
+            normal_matrix_id = glGetUniformLocation(program_id, "normal_matrix"    );
+           material_color_id = glGetUniformLocation(program_id, "material_color"   );
+        // Terreno
+        terrain_projection_matrix_id = glGetUniformLocation(terrain_program_id, "projection_matrix");
+        terrain_model_view_matrix_id = glGetUniformLocation(terrain_program_id, "model_view_matrix");
 
         // Se carga la textura y se envía a la GPU:
               texture_id = create_texture_2d<GLuint>(texture_path);
@@ -209,20 +291,16 @@ namespace udit
 
         /// Niebla
         // Se configura la niebla:
-        GLint  fog_near = glGetUniformLocation(program_id, "fog_near");
-        GLint   fog_far = glGetUniformLocation(program_id, "fog_far");
+        GLint  fog_near = glGetUniformLocation(program_id, "fog_near" );
+        GLint   fog_far = glGetUniformLocation(program_id, "fog_far"  );
         GLint fog_color = glGetUniformLocation(program_id, "fog_color");
 
-        glUniform1f(fog_near, 30.0f);   // ya a 1 u aparece niebla
-        glUniform1f(fog_far, 50.0f);  // a 10 u es completamente niebla
+        glUniform1f( fog_near, 30.0f);   // Donde aparece niebla
+        glUniform1f(  fog_far, 50.0f);   // Donde es completamente niebla
         glUniform3f(fog_color, 0.8f, 0.8f, 0.9f);
 
-        /// Terreno
-        // Se establece la altura máxima del height map en el vertex shader:
-        glUniform1f(glGetUniformLocation(program_id, "max_height"), 5.f);
-
         configure_material(program_id);
-        configure_light(program_id);
+           configure_light(program_id);
 
         // Se establece la configuración básica:
         glEnable(GL_CULL_FACE);
@@ -231,7 +309,8 @@ namespace udit
 
         resize(width, height);
 
-        load_mesh("../assets/Terreno.obj");
+        load_mesh("../assets/Terreno.obj", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+        load_mesh("../assets/Painting.obj", glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, -3.0f)));
     }
 
     Scene::~Scene()
@@ -255,85 +334,131 @@ namespace udit
         angle += 0.01f; // Rotación de la escena en tiempo real
     }
 
+
     void Scene::render()
     {
+        /// ——— 1ª PASADA: render a FRAMEBUFFER ———
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
         glViewport(0, 0, framebuffer_width, framebuffer_height);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);         // Se activa el framebuffer de la textura
-
-        glClearColor(.8f, .8f, .8f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDepthMask(GL_FALSE);  // No escribir en el depth‐buffer
-        glDepthFunc(GL_LEQUAL); // Permitir dibujar skybox incluso cuando depth == 1.0
-        skybox.render(camera);  // Renderizado con la traslación ya anulada
-        glDepthMask(GL_TRUE);   // Volver a habilitar la escritura en depth
-        glDepthFunc(GL_LESS);   // Restaurar el depth‐func normal
+        /// 1.1) Skybox (dibujar siempre al fondo)
+        glDepthMask(GL_FALSE);
+        glDepthFunc(GL_LEQUAL);
+        skybox.render(camera);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
 
-        glUseProgram(program_id);
+        /// 1.2) Precálculo de las matrices de cámara
+        const glm::mat4              view = camera.get_transform_matrix_inverse();
+        const glm::mat4 camera_projection = camera.get_projection_matrix();
 
-        // Se selecciona la textura si está disponible:
-        if (there_is_texture)
-        {
-            glBindTexture(GL_TEXTURE_2D, texture_id);
-        }
-
-        /// CÁMARA
-        // MATRIZ DE VISTA (transformaciones de la cámara)
-        glm::mat4 view = camera.get_transform_matrix_inverse();
-
-        /// MATRIZ DEL MODELO (transformaciones del cubo)
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.f, -1.f, -3.f));  // Posición fija del cubo
-        model = glm::rotate(model, angle, glm::vec3(1.f, 1.f, 0.f)); // Rotación sobre eje Y
-
-        // COMBINACIÓN FINAL: Cámara + modelos
-        glm::mat4 model_view_matrix = view * model;
-
-        /// PRIMERA ETAPA (RENDER DE LOS OBJETOS OPACOS):
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
+        ///// 1.3 Mallas de elevación de terreno (que hacen uso de shaders)
+        //// 1.3.1) Terreno
+        //glUseProgram(terrain_program_id);
 
-        glUniformMatrix4fv(model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_matrix));
+        //// textura de alturas en unidad 1
+        //glActiveTexture(GL_TEXTURE1);
+        //glBindTexture(GL_TEXTURE_2D, height_texture_id);
 
-        glm::mat4 normal_matrix = glm::transpose(glm::inverse(model_view_matrix));
-        glUniformMatrix4fv(normal_matrix_id, 1, GL_FALSE, glm::value_ptr(normal_matrix));
+        //// Subir matrices para terreno
+        //glUniformMatrix4fv(terrain_projection_matrix_id, 1, GL_FALSE, glm::value_ptr(camera_projection));
+        //glUniformMatrix4fv(terrain_model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(view));
 
-        // Texturizado
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-        glUniform1i(glGetUniformLocation(program_id, "sampler"), 0);
+        //// Dibujado de la malla de terreno
+        //terrain.render();
+        /////
+        // 1.3.2) Espiral
+        //glm::mat4 model_spiral = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -10.0f));
+        //spiral.render(camera, model_spiral);
+        ///
 
-        // Se dibuja la malla:
+        // 1.4) Objetos opacos (cube u otros meshes)
+        glUseProgram(program_id);
+
+        /// Bind de textura difusa si existe
+        if (there_is_texture) 
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+            glUniform1i(glGetUniformLocation(program_id, "sampler"), 0);
+        }
+
+        /// Matrices para el cubo/opacos
+        //{
+        //    glm::mat4 model_cube = glm::translate (glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, -3.0f)) * glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 1.0f, 0.0f));
+        //    glm::mat4 model_view_cube = view * model_cube;
+        //    glm::mat4 normal_cube = glm::transpose(glm::inverse(model_view_cube));
+
+        //    glUniformMatrix4fv(model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_cube));
+        //    glUniformMatrix4fv(    normal_matrix_id, 1, GL_FALSE, glm::value_ptr(normal_cube    ));
+        //}
+        glUniformMatrix4fv(projection_matrix_id, 1, GL_FALSE, glm::value_ptr(camera_projection));
+
+        rootNode->draw(view, program_id);
+        ///
+        // Dibujar VAO principal
         glBindVertexArray(vao_id);
-        glDrawElements(GL_TRIANGLES, number_of_indices, GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_TRIANGLES, number_of_indices, GL_UNSIGNED_SHORT, nullptr);
 
-        /// SEGUNDA ETAPA (RENDER DE LOS OBJETOS TRANSPARENTES):
-        // Se habilita la mezcla con el color de fondo usando el canal alpha y se deshabilita la escritura en el Z-Buffer:
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDepthMask(GL_FALSE);
+        /// Cubo de Rubik
+        //glm::mat4         model_rubik = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f));
+        //rubik.render(view, camera_projection, model_rubik, model_view_matrix_id, normal_matrix_id, material_color_id, program_id);
+        //
+        //// Rotaciones
+        //rubik.rotate_row(+1.0f,  1.0f); // Capa superior (Y = +1, rota un grado por frame)
+        //rubik.rotate_row( 0.0f,  0.0f); // Capa central
+        //rubik.rotate_row(-1.0f, -1.0f); // Capa inferior
+        ///
 
-        // Se rota otro cubo y se empuja hacia el fondo:
-        model = glm::mat4(1);
-        model = glm::translate(model, glm::vec3(0.f, 0.f, -5.f));
-        model = glm::rotate(model, angle, glm::vec3(0.f, 1.f, 0.f));
-        model = glm::translate(model, glm::vec3(0.f, 0.f, +2.f));
+        /// Esfera
+        //glm::mat4      model_sphere = glm::translate (glm::mat4(1.0f), glm::vec3(-10.0f, 0.0f, -10.0f)) * glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+        //glm::mat4 model_view_sphere = view * model_sphere;
+        ////glm::mat4     normal_sphere = glm::transpose (glm::inverse(model_view_sphere));
 
-        glUniformMatrix4fv(model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_matrix));
+        //glUniformMatrix4fv (model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_sphere));
+        ////glUniformMatrix4fv (    normal_matrix_id, 1, GL_FALSE, glm::value_ptr(normal_sphere    ));
 
-        // Se renderiza el cubo en el framebuffer:
-        cube.render();
+        ////glm::mat4 model_sphere = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -10.0f));
+        //sphere.render();
 
-        // Se deshabilita la mezcla con el fondo y se restaura escritura en el Z-Buffer:
-        glDepthMask(GL_TRUE);
-        glDisable(GL_BLEND);
+        //// Esfera 2
+        //glm::mat4   model_view_sphere2(1);
 
-        // Se desactiva la prueba de profundidad antes de renderizar el framebuffer
+        //            model_view_sphere2 = glm::translate(model_view_sphere2, glm::vec3(5.f, 0.f, 0.f));
+        //            model_view_sphere2 =     glm::scale(model_view_sphere2, glm::vec3(0.5f));
+        //            model_view_sphere2 =    glm::rotate(model_view_sphere2, angle * 5.f, glm::vec3(0.f, 1.f, 0.f));
+
+        //            model_view_sphere2 = view * model_sphere * model_view_sphere2;
+
+        //glUniformMatrix4fv(model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_sphere2));
+
+        //sphere.render();
+        /// Esfera
+
+        /// 1.5) Objetos transparentes (tal como ya lo tenías)
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glDepthMask(GL_FALSE);
+
+        //cube.render();  // o tu lógica específica de transparencias
+
+        //glDepthMask(GL_TRUE);
+        //glDisable(GL_BLEND);
+
+        /// ——— 2ª PASADA: post‐procesado a pantalla ———
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, window_width, window_height);
+
         glDisable(GL_DEPTH_TEST);
-        render_framebuffer();   // Dibuja el framebuffer en pantalla
-    }
+        glUseProgram(effect_program_id);
 
+        glBindVertexArray(framebuffer_quad_vao);
+        glBindTexture(GL_TEXTURE_2D, out_texture_id);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
 
     /// <summary>
     ///  OpenGL adapta el campo visual horizontal/vertical según la nueva forma de la ventana si se cambia su tamaño
@@ -476,87 +601,22 @@ namespace udit
     ///     Importa un modelo 3D a la escena
     /// </summary>
     /// <param name="path"></param>
-    void Scene::load_mesh(const std::string& mesh_file_path)
+    void Scene::load_mesh(const std::string& mesh_file_path, const glm::mat4& localTransform)
     {
-        Assimp::Importer importer;
+        // 1) Crea y carga la malla
+        auto mesh = std::make_shared<AssimpMesh>();
 
-        auto scene = importer.ReadFile
-        (
-            mesh_file_path,
-            aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType
-        );
+        mesh->load(mesh_file_path);
 
-        // Si scene es un puntero nulo significa que el archivo no se pudo cargar con éxito:
-        if (scene && scene->mNumMeshes > 0)
-        {
-            // Para este ejemplo se coge la primera malla solamente:
-            auto mesh = scene->mMeshes[0];
-            size_t number_of_vertices = mesh->mNumVertices;
+        // 2) La empaqueta en un SceneNode
+        auto node = std::make_unique<SceneNode>();
+        node->addMesh(mesh);
 
-            // Se generan índices para los VBOs del cubo:
-            glGenBuffers(VBO_COUNT, vbo_ids);
-            glGenVertexArrays(1, &vao_id);
-            // Se activa el VAO del cubo para configurarlo:
-            glBindVertexArray(vao_id);
+        // 3) Se le asigna el transform local para ajustar su posición en escena
+        node->localTransform = localTransform;
 
-            // Coordenadas
-            glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[COORDINATES_VBO]);
-            glBufferData(GL_ARRAY_BUFFER, number_of_vertices * sizeof(aiVector3D), mesh->mVertices, GL_STATIC_DRAW);
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-
-            // El archivo del modelo 3D de ejemplo no guarda un color por cada vértice, por lo que se va
-            // a crear un array de colores aleatorios (tantos como vértices):
-            // vector< vec3 > vertex_colors(number_of_vertices);
-            // for (auto& color : vertex_colors)
-            // {
-            //     color = random_color();
-            // }
-
-            // Normales (para iluminación)
-            if (mesh->HasNormals())
-            {
-                // Se suben a un VBO los datos de color y se vinculan al VAO:
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[COLORS_VBO]);
-                glBufferData(GL_ARRAY_BUFFER, number_of_vertices * sizeof(aiVector3D), mesh->mNormals, GL_STATIC_DRAW);
-                glEnableVertexAttribArray(1);
-                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-            }
-
-            // Coordenadas de textura (UVs)
-            if (mesh->HasTextureCoords(0))
-            {
-                vector<vec2> uvs(number_of_vertices);
-                for (unsigned i = 0; i < number_of_vertices; ++i)
-                {
-                    uvs[i] = vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[UVS_VBO]);
-                glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(vec2), uvs.data(), GL_STATIC_DRAW);
-                glEnableVertexAttribArray(2);
-                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
-            }
-
-            // Índices
-            // Los índices en ASSIMP están repartidos en "faces", pero OpenGL necesita un array de enteros
-            // por lo que vamos a mover los índices de las "faces" a un array de enteros:
-            // Se asume que todas las "faces" son triángulos (revisar el flag aiProcess_Triangulate arriba).
-            number_of_indices = mesh->mNumFaces * 3;
-            vector<GLshort> indices(number_of_indices);
-            auto vertex_index = indices.begin();
-            for (unsigned i = 0; i < mesh->mNumFaces; ++i)
-            {
-                auto& face = mesh->mFaces[i];
-                *vertex_index++ = face.mIndices[0];
-                *vertex_index++ = face.mIndices[1];
-                *vertex_index++ = face.mIndices[2];
-            }
-
-            // Se suben a un EBO los datos de índices:
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_ids[INDICES_EBO]);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLshort), indices.data(), GL_STATIC_DRAW);
-        }
+        // 4) Se añade al root
+        rootNode->addChild(std::move(node));
     }
 
     void Scene::configure_material(GLuint program_id)

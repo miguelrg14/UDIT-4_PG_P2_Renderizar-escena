@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #include "Terrain.hpp"
 #include <glm.hpp>
@@ -13,7 +13,6 @@ using half_float::half;
 
 namespace udit
 {
-
     Terrain::Terrain(float width, float depth, unsigned x_slices, unsigned z_slices)
     {
         number_of_vertices = x_slices * z_slices;
@@ -48,16 +47,13 @@ namespace udit
         }
 
         // Se crean el VAO y los VBOs:
-
         glGenVertexArrays (1, &vao_id);
         glGenBuffers (VBO_COUNT, vbo_ids);
 
         // Se activa el VAO para configurarlo:
-
         glBindVertexArray (vao_id);
 
         // Se suben a un VBO los datos de coordenadas y se vinculan al VAO:
-
         glBindBuffer (GL_ARRAY_BUFFER, vbo_ids[COORDINATES_VBO]);
         glBufferData (GL_ARRAY_BUFFER, coordinates.size () * sizeof(half), coordinates.data (), GL_STATIC_DRAW);
 
@@ -65,7 +61,6 @@ namespace udit
         glVertexAttribPointer (0, 2, GL_HALF_FLOAT, GL_FALSE, 0, 0);
 
         // Se suben a un VBO los datos de coordenadas de textura y se vinculan al VAO:
-
         glBindBuffer (GL_ARRAY_BUFFER, vbo_ids[TEXTURE_UVS_VBO]);
         glBufferData (GL_ARRAY_BUFFER, texture_uvs.size () * sizeof(half), texture_uvs.data (), GL_STATIC_DRAW);
 
@@ -83,7 +78,6 @@ namespace udit
     {
         // Se selecciona el VAO que contiene los datos del objeto y se dibujan sus vértices
         // conectándolos con líneas:
-
         glBindVertexArray (vao_id);
         glDrawArrays (GL_LINE_STRIP, 0, number_of_vertices);
     }

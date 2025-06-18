@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #pragma once
 

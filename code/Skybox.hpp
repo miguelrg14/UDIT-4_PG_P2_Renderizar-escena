@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #ifndef SKYBOX_HEADER
 #define SKYBOX_HEADER
@@ -17,7 +17,7 @@
         {
         private:
 
-            static const GLfloat              coordinates[];
+            static const      GLfloat       coordinates[];
             static const std::string   vertex_shader_code;
             static const std::string fragment_shader_code;
 

@@ -1,4 +1,7 @@
 
+// Este código es de dominio público
+// Miguel Rodríguez Gallego
+
 #include "Camera.hpp"
 #include <SDL.h>
 

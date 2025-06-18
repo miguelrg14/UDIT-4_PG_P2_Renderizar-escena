@@ -1,7 +1,6 @@
 
-// Este código es de dominio público.
-// angel.rodriguez@esne.edu
-// 2014.03+
+// Este código es de dominio público
+// Miguel Rodríguez Gallego
 
 #include <cassert>
 #include <iostream>

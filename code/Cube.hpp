@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #ifndef CUBE_HEADER
 #define CUBE_HEADER
@@ -15,7 +15,6 @@
         private:
 
             // Índices para indexar el array vbo_ids:
-
             enum
             {
                 COORDINATES_VBO,
@@ -25,7 +24,6 @@
             };
 
             // Arrays de datos del cubo base:
-
             static const GLfloat coordinates[];
             static const GLfloat normals    [];
             static const GLubyte indices    [];

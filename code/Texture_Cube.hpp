@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #ifndef TEXTURE_CUBE_HEADER
 #define TEXTURE_CUBE_HEADER

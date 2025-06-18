@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #include "opengl-recipes.hpp"
 
@@ -98,6 +98,140 @@ namespace udit
         glDeleteShader(fragment_shader_id);
 
         return (program_id);
+    }
+
+    template<typename COLOR_FORMAT>
+    GLuint create_texture_2d(const std::string& texture_path)
+    {
+        auto image = load_image<COLOR_FORMAT>(texture_path);
+
+        if (image)
+        {
+            GLuint texture_id;
+
+            texture_id = SOIL_load_OGL_texture
+            (
+                texture_path.c_str(),   // Ruta de la textura
+                SOIL_LOAD_AUTO,
+                SOIL_CREATE_NEW_ID,
+                SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
+            );
+
+            glEnable(GL_TEXTURE_2D);
+            glGenTextures(1, &texture_id);
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            glTexImage2D
+            (
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA,
+                image->get_width(),
+                image->get_height(),
+                0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                image->colors()
+            );
+
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            return texture_id;
+        }
+
+        return -1;
+    }
+
+    template<>
+    GLuint create_texture_2d<GLuint>(const std::string& texture_path)
+    {
+        auto image = load_image<GLuint>(texture_path);
+
+        if (image)
+        {
+            GLuint texture_id;
+
+            texture_id = SOIL_load_OGL_texture
+            (
+                texture_path.c_str(),   // Ruta de la textura
+                SOIL_LOAD_AUTO,
+                SOIL_CREATE_NEW_ID,
+                SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
+            );
+
+            glEnable(GL_TEXTURE_2D);
+            glGenTextures(1, &texture_id);
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            glTexImage2D
+            (
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA,
+                image->get_width(),
+                image->get_height(),
+                0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                image->colors()
+            );
+
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            return texture_id;
+        }
+
+        return -1;
+    }
+
+
+    template<>
+    GLuint create_texture_2d<Monochrome8>(const std::string& texture_path)
+    {
+        auto image = load_image< Monochrome8 >(texture_path);
+
+        if (image)
+        {
+            GLuint texture_id;
+
+            glEnable(GL_TEXTURE_2D);
+            glGenTextures(1, &texture_id);
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            glTexImage2D
+            (
+                GL_TEXTURE_2D,
+                0,
+                GL_R8,
+                image->get_width(),
+                image->get_height(),
+                0,
+                GL_RED,
+                GL_UNSIGNED_BYTE,
+                image->colors()
+            );
+
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            return texture_id;
+        }
+
+        return -1;
     }
 
     /// ------------------ ERRORES (Utilidades) -----------------

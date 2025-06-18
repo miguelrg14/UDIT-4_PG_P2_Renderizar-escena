@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #pragma once
 
@@ -61,53 +61,7 @@ namespace udit
 
     // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // //
 
-    template< typename COLOR_FORMAT >
-    GLuint create_texture_2d (const std::string & texture_path)
-    {
-        auto image = load_image<COLOR_FORMAT>(texture_path);
+    template<typename COLOR_FORMAT>
+    GLuint create_texture_2d(const std::string& texture_path);
 
-        if (image)
-        {
-            // Se habilitan las texturas, se genera un id para un búfer de textura,
-            // se selecciona el búfer de textura creado y se configuran algunos de
-            // sus parámetros:
-            GLuint texture_id;
-
-            texture_id = SOIL_load_OGL_texture
-            (
-                texture_path.c_str(),   // Ruta de la textura
-                SOIL_LOAD_AUTO,
-                SOIL_CREATE_NEW_ID,
-                SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
-            );
-
-            glEnable(GL_TEXTURE_2D);
-            glGenTextures(1, &texture_id);
-            glBindTexture(GL_TEXTURE_2D, texture_id);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-            glTexImage2D
-            (
-                GL_TEXTURE_2D,
-                0,
-                GL_RGBA,
-                image->get_width(),
-                image->get_height(),
-                0,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                image->colors()
-            );
-
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            return texture_id;
-        }
-
-        return -1;
-    }
 }

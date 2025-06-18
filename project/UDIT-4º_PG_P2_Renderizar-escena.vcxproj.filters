@@ -28,6 +28,15 @@
     <Filter Include="Archivos de recursos\Skybox">
       <UniqueIdentifier>{968d94d6-fb11-414a-8227-b0734ffa006e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de encabezado\Formas Geométricas">
+      <UniqueIdentifier>{5bd6f99c-e7b3-473e-a0c4-90897770a99c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\Formas Geométricas">
+      <UniqueIdentifier>{cfcec140-53be-4fe7-b812-1db0e8400955}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\Grafo">
+      <UniqueIdentifier>{da664dac-e39d-45a3-b0c5-c20f46d21792}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\code\Scene.hpp">
@@ -45,16 +54,10 @@
     <ClInclude Include="..\code\SceneNode.hpp">
       <Filter>Archivos de encabezado\Grafo</Filter>
     </ClInclude>
-    <ClInclude Include="..\code\Cube.hpp">
-      <Filter>Archivos de encabezado\Otros</Filter>
-    </ClInclude>
     <ClInclude Include="..\code\Window.hpp">
       <Filter>Archivos de encabezado\Otros</Filter>
     </ClInclude>
     <ClInclude Include="..\code\Camera.hpp">
-      <Filter>Archivos de encabezado\Otros</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\Terrain.hpp">
       <Filter>Archivos de encabezado\Otros</Filter>
     </ClInclude>
     <ClInclude Include="..\code\Skybox.hpp">
@@ -62,6 +65,39 @@
     </ClInclude>
     <ClInclude Include="..\code\Texture_Cube.hpp">
       <Filter>Archivos de encabezado\Skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Cube.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Cone.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Cylinder.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Plane.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Spiral.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Terrain.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Rubik.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\CubeFace.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Sphere.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Mesh.hpp">
+      <Filter>Archivos de encabezado\Grafo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\AssimpMesh.hpp">
+      <Filter>Archivos de encabezado\Grafo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -74,13 +110,7 @@
     <ClCompile Include="..\code\opengl-recipes.cpp">
       <Filter>Archivos de recursos\Otros</Filter>
     </ClCompile>
-    <ClCompile Include="..\code\Cube.cpp">
-      <Filter>Archivos de recursos\Otros</Filter>
-    </ClCompile>
     <ClCompile Include="..\code\Window.cpp">
-      <Filter>Archivos de recursos\Otros</Filter>
-    </ClCompile>
-    <ClCompile Include="..\code\Terrain.cpp">
       <Filter>Archivos de recursos\Otros</Filter>
     </ClCompile>
     <ClCompile Include="..\code\Skybox.cpp">
@@ -91,6 +121,36 @@
     </ClCompile>
     <ClCompile Include="..\code\Camera.cpp">
       <Filter>Archivos de recursos\Otros</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Cube.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Cone.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Cylinder.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Plane.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Spiral.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Terrain.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Rubik.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\CubeFace.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Sphere.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\AssimpMesh.cpp">
+      <Filter>Archivos de recursos\Grafo</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #ifndef CAMERA_HEADER
 #define CAMERA_HEADER
@@ -41,13 +41,13 @@
 
             Camera(float ratio = 1.f)
             {
-                reset (60.f, 0.1f, 1000.f, ratio);
+                reset (90.f, 0.1f, 1000.f, ratio);
                 updateCameraVectors();
             }
 
             Camera(float near_z, float far_z, float ratio = 1.f)
             {
-                reset (60.f, near_z, far_z, ratio);
+                reset (90.f, near_z, far_z, ratio);
                 updateCameraVectors();
             }
 
