@@ -1,3 +1,7 @@
+
+// Este código es de dominio público
+// Miguel Rodríguez Gallego
+
 #include "Spiral.hpp"
 #include <vector>
 #include <iostream>
@@ -14,7 +18,6 @@ namespace udit
 
             uniform mat4 model_view_matrix;
             uniform mat4 projection_matrix;
-            uniform vec3 camera_position;
 
             layout (location = 0) in float index;
 
@@ -22,14 +25,26 @@ namespace udit
 
             void main()
             {
-                float PI = 3.1415926535897932384626433832795;
-                float radius = 0.2 + 0.005 * index;
+                const float PI = 3.141592653589793;
+                const int rows = 40;
+                const int cols = 40;
 
-                vec4 local_pos = vec4
-                (
-                    sin(2.0 * PI * 0.005 * index) * radius,
-                    index * 0.005 - 0.5,
-                    cos(2.0 * PI * 0.005 * index) * radius,
+                // Convert index a coordenadas 2D
+                int i = int(mod(index, cols));      // columna (phi)
+                int j = int(index / cols);          // fila (theta)
+
+                float u = float(i) / float(cols - 1); // [0, 1]
+                float v = float(j) / float(rows - 1); // [0, 1]
+
+                float theta = v * PI / 2.0;      // de 0 a PI/2 (semiesfera)
+                float phi   = u * 2.0 * PI;      // de 0 a 2PI
+
+                float r = 1.0;
+
+                vec4 local_pos = vec4(
+                    r * sin(theta) * cos(phi),
+                    r * cos(theta),
+                    r * sin(theta) * sin(phi),
                     1.0
                 );
 
@@ -109,7 +124,7 @@ namespace udit
         glDepthMask(GL_FALSE);
         // Se activa el VAO del modelo para configurarlo:
         glBindVertexArray(vao_id);
-        glDrawArrays(GL_LINE_STRIP, 1, indexCount - 1);
+        glDrawArrays(GL_TRIANGLE_STRIP, 1, indexCount - 1);
         glBindVertexArray(0);
         glDepthMask(GL_TRUE);
 

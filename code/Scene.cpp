@@ -183,16 +183,16 @@ namespace udit
             void main()
             {
                 /// Ejemplo de efecto: tono sepia amortiguado
-                //// 1) Muestreamos el color original de la textura
-                //   vec3 color = texture (sampler2d, texture_uv.st).rgb;
-                //// 2) Convertimos a intensidad luminosa promedio
-                //   float i = (color.r + color.g + color.b) * 0.3333333333;
-                //// 3) Aplicamos un tinte amarronado (sepia suave)
-                //   vec3 sepia = vec3(1.0, 0.75, 0.5);
-                //   fragment_color = vec4(vec3(i, i, i) * sepia, 1.0);
+                // 1) Muestrea el color original de la textura
+                   vec3 color = texture (sampler2d, texture_uv.st).rgb;
+                // 2) Convierte a intensidad luminosa promedio
+                   float i = (color.r + color.g + color.b) * 0.3333333333;
+                // 3) Aplica un tinte amarronado (sepia suave)
+                   vec3 sepia = vec3(1.0, 0.75, 0.5);
+                   fragment_color = vec4(vec3(i, i, i) * sepia, 1.0);
 
                 /// Alternativa: (Aplicar textura original sin modificaciones)
-                fragment_color = texture(sampler2d, texture_uv);
+                //fragment_color = texture(sampler2d, texture_uv);
             }
         )";
 
@@ -304,10 +304,10 @@ namespace udit
 
         resize(width, height);
 
-        load_mesh("../assets/Terreno.obj", "../assets/Stone_Base_Color.png", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-        load_mesh("../assets/Painting.obj", "../assets/Frame1.jpg", glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, -3.0f)));
-        load_mesh("../assets/Plant.obj", "../assets/plant1_Material.001_BaseColor.png", glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -1.0f, 0.0f)));
-        load_mesh("../assets/Umbrella.obj", "../assets/Paraguas_DefaultMaterial_BaseColor.png", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -7.0f)));
+        load_mesh("../assets/Terreno.obj", "../assets/Stone_Base_Color.png", glm::translate(glm::mat4(1.0f), glm::vec3(15.0f, 0.0f, 0.0f)));
+        load_mesh("../assets/Painting.obj", "../assets/Frame1.jpg", glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -3.0f)));
+        load_mesh("../assets/Plant.obj", "../assets/plant1_Material.001_BaseColor.png", glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f, -1.0f, 0.0f)));
+        load_mesh("../assets/Umbrella.obj", "../assets/Paraguas_DefaultMaterial_BaseColor.png", glm::translate(glm::mat4(1.0f), glm::vec3(-15.0f, 0.0f, 0.0f)));
     }
 
     Scene::~Scene()
@@ -352,24 +352,24 @@ namespace udit
 
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
-        ///// 1.3 Mallas de elevación de terreno (que hacen uso de shaders)
-        //// 1.3.1) Terreno
-        //glUseProgram(terrain_program_id);
+        /// 1.3 Mallas de elevación de terreno (que hacen uso de shaders)
+        // 1.3.1) Terreno
+        glUseProgram(terrain_program_id);
 
-        //// textura de alturas en unidad 1
-        //glActiveTexture(GL_TEXTURE1);
-        //glBindTexture(GL_TEXTURE_2D, height_texture_id);
+        // textura de alturas en unidad 1
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, height_texture_id);
 
-        //// Subir matrices para terreno
-        //glUniformMatrix4fv(terrain_projection_matrix_id, 1, GL_FALSE, glm::value_ptr(camera_projection));
-        //glUniformMatrix4fv(terrain_model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(view));
+        // Subir matrices para terreno
+        glUniformMatrix4fv(terrain_projection_matrix_id, 1, GL_FALSE, glm::value_ptr(camera_projection));
+        glUniformMatrix4fv(terrain_model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(view));
 
-        //// Dibujado de la malla de terreno
-        //terrain.render();
-        /////
+        // Dibujado de la malla de terreno
+        terrain.render();
+        ///
         // 1.3.2) Espiral
-        //glm::mat4 model_spiral = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -10.0f));
-        //spiral.render(camera, model_spiral);
+        glm::mat4 model_spiral = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -10.0f));
+        spiral.render(camera, model_spiral);
         ///
 
         // 1.4) Objetos opacos (cube u otros meshes)
@@ -383,15 +383,6 @@ namespace udit
             glUniform1i(glGetUniformLocation(program_id, "sampler"), 0);
         }
 
-        /// Matrices para el cubo/opacos
-        //{
-        //    glm::mat4 model_cube = glm::translate (glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, -3.0f)) * glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 1.0f, 0.0f));
-        //    glm::mat4 model_view_cube = view * model_cube;
-        //    glm::mat4 normal_cube = glm::transpose(glm::inverse(model_view_cube));
-
-        //    glUniformMatrix4fv(model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_cube));
-        //    glUniformMatrix4fv(    normal_matrix_id, 1, GL_FALSE, glm::value_ptr(normal_cube    ));
-        //}
         glUniformMatrix4fv(projection_matrix_id, 1, GL_FALSE, glm::value_ptr(camera_projection));
 
         rootNode->draw(view, program_id);
@@ -411,39 +402,49 @@ namespace udit
         ///
 
         /// Esfera
-        //glm::mat4      model_sphere = glm::translate (glm::mat4(1.0f), glm::vec3(-10.0f, 0.0f, -10.0f)) * glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
-        //glm::mat4 model_view_sphere = view * model_sphere;
-        ////glm::mat4     normal_sphere = glm::transpose (glm::inverse(model_view_sphere));
+        glm::mat4      model_sphere = glm::translate (glm::mat4(1.0f), glm::vec3(-10.0f, 0.0f, -10.0f)) * glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 model_view_sphere = view * model_sphere;
+        glm::mat4     normal_sphere = glm::transpose (glm::inverse(model_view_sphere));
 
-        //glUniformMatrix4fv (model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_sphere));
-        ////glUniformMatrix4fv (    normal_matrix_id, 1, GL_FALSE, glm::value_ptr(normal_sphere    ));
+        glUniformMatrix4fv (model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_sphere));
+        glUniformMatrix4fv (    normal_matrix_id, 1, GL_FALSE, glm::value_ptr(normal_sphere    ));
 
-        ////glm::mat4 model_sphere = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -10.0f));
-        //sphere.render();
+        sphere.render();
 
-        //// Esfera 2
-        //glm::mat4   model_view_sphere2(1);
+        // Esfera 2
+        glm::mat4   model_view_sphere2(1);
 
-        //            model_view_sphere2 = glm::translate(model_view_sphere2, glm::vec3(5.f, 0.f, 0.f));
-        //            model_view_sphere2 =     glm::scale(model_view_sphere2, glm::vec3(0.5f));
-        //            model_view_sphere2 =    glm::rotate(model_view_sphere2, angle * 5.f, glm::vec3(0.f, 1.f, 0.f));
+                    model_view_sphere2 = glm::translate(model_view_sphere2, glm::vec3(5.f, 0.f, 0.f));
+                    model_view_sphere2 =     glm::scale(model_view_sphere2, glm::vec3(0.5f));
+                    model_view_sphere2 =    glm::rotate(model_view_sphere2, angle * 5.f, glm::vec3(0.f, 1.f, 0.f));
 
-        //            model_view_sphere2 = view * model_sphere * model_view_sphere2;
+                    model_view_sphere2 = view * model_sphere * model_view_sphere2;
 
-        //glUniformMatrix4fv(model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_sphere2));
+        glUniformMatrix4fv(model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_sphere2));
 
-        //sphere.render();
+        sphere.render();
         /// Esfera
 
         /// 1.5) Objetos transparentes (tal como ya lo tenías)
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        //glDepthMask(GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(GL_FALSE);
+        
+        glm::mat4   model_view_transparent_cube(1);
 
-        //cube.render();  // o tu lógica específica de transparencias
+        model_view_transparent_cube = glm::translate(model_view_transparent_cube, glm::vec3(10.f, 0.f, 0.f));
+        model_view_transparent_cube = glm::scale(model_view_transparent_cube, glm::vec3(0.5f));
+        model_view_transparent_cube = glm::rotate(model_view_transparent_cube, angle * 5.f, glm::vec3(0.f, 1.f, 0.f));
 
-        //glDepthMask(GL_TRUE);
-        //glDisable(GL_BLEND);
+        model_view_transparent_cube = view * model_view_transparent_cube;
+
+        glUniformMatrix4fv(model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_transparent_cube));
+
+        cube.render();  // o tu lógica específica de transparencias
+
+        glDepthMask(GL_TRUE);
+        glDisable(GL_BLEND);
+        ///
 
         /// ——— 2ª PASADA: post‐procesado a pantalla ———
         glBindFramebuffer(GL_FRAMEBUFFER, 0);

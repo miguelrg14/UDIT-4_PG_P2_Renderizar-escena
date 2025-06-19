@@ -43,8 +43,8 @@ namespace udit
         };
 
         // Postprocesado: Reescalado de la pantalla con framebuffer
-        static const GLsizei  framebuffer_width = 1024; // 256; // 1024;
-        static const GLsizei framebuffer_height = 1024; // 256; // 1024;
+        static const GLsizei  framebuffer_width = 256; // 256; // 1024;
+        static const GLsizei framebuffer_height = 256; // 256; // 1024;
 
         static const std::string          vertex_shader_code;
         static const std::string        fragment_shader_code;
