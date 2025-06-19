@@ -13,7 +13,6 @@
 
     namespace udit 
     {
-
         class AssimpMesh : public Mesh 
         {
         public:
@@ -33,16 +32,13 @@
             // Nueva parte:
             /// Ruta a la textura que queramos usar para este mesh
             void setTexturePath(const std::string& path) { texturePath = path; }
-            void setTextureID(GLuint id) { textureID = id; }
+            void   setTextureID(           GLuint    id) { textureID   = id;   }
 
-            AssimpMesh() : textureID(0) {}
-            ~AssimpMesh() 
-            {
-                if (textureID) glDeleteTextures(1, &textureID);
-            }
+            AssimpMesh();
+            ~AssimpMesh();
 
             void load(const std::string& mesh_file_path) override;
-            void draw(const glm::mat4& modelMatrix, GLuint shaderProgram) const override;
+            void draw(const glm::mat4&   modelMatrix, GLuint shaderProgram) const override;
 
         private:
             std::string texturePath;

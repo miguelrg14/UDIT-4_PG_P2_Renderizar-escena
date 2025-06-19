@@ -13,13 +13,24 @@
 
 namespace udit
 {
+    AssimpMesh::AssimpMesh() : textureID(0)
+    {
+
+    }
+    AssimpMesh::~AssimpMesh()
+    {
+        if (textureID) glDeleteTextures(1, &textureID);
+    }
+
     void AssimpMesh::load(const std::string& mesh_file_path)
     {
         Assimp::Importer importer;
+
+        // 1) Importar modelo
         const aiScene* scene = importer.ReadFile
         (
             mesh_file_path,
-            aiProcess_Triangulate |  aiProcess_JoinIdenticalVertices | aiProcess_SortByPType
+            aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType
         );
         if (!scene || scene->mNumMeshes == 0)
         {
@@ -28,20 +39,6 @@ namespace udit
                 std::string("No se pudo cargar mesh: ") + importer.GetErrorString()
             );
         }
-
-        //// 1) Carga de textura, si se ha proporcionado path
-        //if (!texturePath.empty())
-        //{
-        //    textureID = SOIL_load_OGL_texture
-        //    (
-        //        texturePath.c_str(),
-        //        SOIL_LOAD_AUTO,
-        //        SOIL_CREATE_NEW_ID,
-        //        SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
-        //    );
-        //    if (!textureID)
-        //        std::cerr << "[AssimpMesh] error cargando textura: " << texturePath << "\n";
-        //}
 
         // 2) Subida de geometría (igual que antes)
         aiMesh* mesh = scene->mMeshes[0];
@@ -78,9 +75,7 @@ namespace udit
                 );
             }
             glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[UV_VBO]);
-            glBufferData(GL_ARRAY_BUFFER,
-                uvs.size() * sizeof(glm::vec2),
-                uvs.data(), GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), uvs.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
         }
@@ -97,9 +92,7 @@ namespace udit
             indices.push_back(f.mIndices[2]);
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_ids[INDICES_EBO]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-            indices.size() * sizeof(GLushort),
-            indices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
 
         glBindVertexArray(0);
     }
