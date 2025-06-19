@@ -139,9 +139,9 @@ namespace udit
 
                 float final_alpha = texcol.a * (0.5 - fog_factor);      // 4) Atenuar el αlpha original según la niebla
 
-                // fragment_color = vec4(final_rgb, final_alpha);          // Resultado final: color + transparencia progresiva
+                fragment_color = vec4(final_rgb, final_alpha);          // Resultado final: color + transparencia progresiva
 
-                fragment_color = vec4(front_color, 1.0);
+                // fragment_color = vec4(front_color, 1.0); // Prueba con solo color
             }
         )";
 
@@ -235,7 +235,6 @@ namespace udit
             }
         )";
 
-    const string Scene::texture_path = "../assets/Stone_Base_Color.png";
     const string Scene::texture_path_terrain = "../assets/height-map.png";
 
     Scene::Scene(unsigned width, unsigned height)
@@ -285,10 +284,6 @@ namespace udit
         terrain_projection_matrix_id = glGetUniformLocation(terrain_program_id, "projection_matrix");
         terrain_model_view_matrix_id = glGetUniformLocation(terrain_program_id, "model_view_matrix");
 
-        // Se carga la textura y se envía a la GPU:
-              texture_id = create_texture_2d<GLuint>(texture_path);
-        there_is_texture = texture_id > 0;
-
         /// Niebla
         // Se configura la niebla:
         GLint  fog_near = glGetUniformLocation(program_id, "fog_near" );
@@ -309,8 +304,10 @@ namespace udit
 
         resize(width, height);
 
-        load_mesh("../assets/Terreno.obj", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-        load_mesh("../assets/Painting.obj", glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, -3.0f)));
+        load_mesh("../assets/Terreno.obj", "../assets/Stone_Base_Color.png", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+        load_mesh("../assets/Painting.obj", "../assets/Frame1.jpg", glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, -3.0f)));
+        load_mesh("../assets/Plant.obj", "../assets/plant1_Material.001_BaseColor.png", glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -1.0f, 0.0f)));
+        load_mesh("../assets/Umbrella.obj", "../assets/Paraguas_DefaultMaterial_BaseColor.png", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -7.0f)));
     }
 
     Scene::~Scene()
@@ -601,21 +598,29 @@ namespace udit
     ///     Importa un modelo 3D a la escena
     /// </summary>
     /// <param name="path"></param>
-    void Scene::load_mesh(const std::string& mesh_file_path, const glm::mat4& localTransform)
+    void Scene::load_mesh
+    (
+        const std::string& mesh_file_path,
+        const std::string& texture_file_path,
+        const glm::mat4&   localTransform
+    )
     {
-        // 1) Crea y carga la malla
         auto mesh = std::make_shared<AssimpMesh>();
 
+        // --- Carga aquí la textura y pásasela al mesh:
+        GLuint tex = create_texture_2d<GLuint>(texture_file_path);
+        if (tex == GLuint(-1)) 
+        {
+            std::cerr << "[Scene] error cargando textura: " << texture_file_path << "\n";
+        }
+        mesh->setTextureID(tex);
+
+        // --- Ahora carga solo la geometría:
         mesh->load(mesh_file_path);
 
-        // 2) La empaqueta en un SceneNode
         auto node = std::make_unique<SceneNode>();
         node->addMesh(mesh);
-
-        // 3) Se le asigna el transform local para ajustar su posición en escena
         node->localTransform = localTransform;
-
-        // 4) Se añade al root
         rootNode->addChild(std::move(node));
     }
 

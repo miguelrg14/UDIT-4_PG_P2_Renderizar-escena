@@ -5,66 +5,87 @@
 #include "AssimpMesh.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <SOIL2.h>          // para SOIL_load_OGL_texture
 #include <gtc/type_ptr.hpp>
 #include <stdexcept>
-
-//using namespace udit;
+#include <iostream>
 
 namespace udit
 {
     void AssimpMesh::load(const std::string& mesh_file_path)
     {
         Assimp::Importer importer;
-
         const aiScene* scene = importer.ReadFile
         (
             mesh_file_path,
-            aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType
+            aiProcess_Triangulate |  aiProcess_JoinIdenticalVertices | aiProcess_SortByPType
         );
-
-        if (!scene || scene->mNumMeshes == 0) 
+        if (!scene || scene->mNumMeshes == 0)
         {
-            throw std::runtime_error(std::string("No se pudo cargar mesh: ") + importer.GetErrorString());
+            throw std::runtime_error
+            (
+                std::string("No se pudo cargar mesh: ") + importer.GetErrorString()
+            );
         }
 
+        //// 1) Carga de textura, si se ha proporcionado path
+        //if (!texturePath.empty())
+        //{
+        //    textureID = SOIL_load_OGL_texture
+        //    (
+        //        texturePath.c_str(),
+        //        SOIL_LOAD_AUTO,
+        //        SOIL_CREATE_NEW_ID,
+        //        SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y
+        //    );
+        //    if (!textureID)
+        //        std::cerr << "[AssimpMesh] error cargando textura: " << texturePath << "\n";
+        //}
+
+        // 2) Subida de geometría (igual que antes)
         aiMesh* mesh = scene->mMeshes[0];
         size_t nverts = mesh->mNumVertices;
 
-        // Genera VAO y VBOs
         glGenVertexArrays(1, &vao_id);
         glGenBuffers(VBO_COUNT, vbo_ids);
         glBindVertexArray(vao_id);
 
-        // Coordenadas
+        // — Coordenadas —
         glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[COORD_VBO]);
-        glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(aiVector3D), mesh->mVertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(aiVector3D),  mesh->mVertices, GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-        // Normales
-        if (mesh->HasNormals()) 
-        {
+        // — Normales —
+        if (mesh->HasNormals()) {
             glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[NORMAL_VBO]);
-            glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(aiVector3D), mesh->mNormals, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, nverts * sizeof(aiVector3D),  mesh->mNormals, GL_STATIC_DRAW);
             glEnableVertexAttribArray(1);
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
         }
 
-        // UVs
+        // — UVs —
         if (mesh->HasTextureCoords(0)) 
         {
             std::vector<glm::vec2> uvs(nverts);
-            for (size_t i = 0; i < nverts; ++i)
+            for (size_t i = 0; i < nverts; ++i) 
             {
-                uvs[i] = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+                uvs[i] = glm::vec2
+                (
+                    mesh->mTextureCoords[0][i].x,
+                    mesh->mTextureCoords[0][i].y
+                );
             }
             glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[UV_VBO]);
-            glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), uvs.data(), GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER,
+                uvs.size() * sizeof(glm::vec2),
+                uvs.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(2);
             glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
         }
 
-        // Índices
+        // — Índices —
         number_of_indices = mesh->mNumFaces * 3;
         std::vector<GLushort> indices;
         indices.reserve(number_of_indices);
@@ -76,19 +97,38 @@ namespace udit
             indices.push_back(f.mIndices[2]);
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_ids[INDICES_EBO]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+            indices.size() * sizeof(GLushort),
+            indices.data(), GL_STATIC_DRAW);
 
         glBindVertexArray(0);
     }
 
+
     void AssimpMesh::draw(const glm::mat4& modelMatrix, GLuint shaderProgram) const
     {
-        // Asume uniform mat4 uModel
-        GLint loc = glGetUniformLocation(shaderProgram, "uModel");
+        // 1) Uniform de modelo
+        GLint loc = glGetUniformLocation(shaderProgram, "model_view_matrix");
         glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
+        // 2) Bind de la textura si existe
+        if (textureID) 
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, textureID);
+            GLint s = glGetUniformLocation(shaderProgram, "sampler");
+            glUniform1i(s, 0);
+        }
+
+        // 3) Dibujo de la malla
         glBindVertexArray(vao_id);
-        glDrawElements(GL_TRIANGLES, number_of_indices, GL_UNSIGNED_SHORT, nullptr);
+        glDrawElements
+        (
+            GL_TRIANGLES,
+            number_of_indices,
+            GL_UNSIGNED_SHORT,
+            nullptr
+        );
         glBindVertexArray(0);
     }
 }

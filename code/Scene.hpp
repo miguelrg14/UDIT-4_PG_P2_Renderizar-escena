@@ -127,7 +127,12 @@ namespace udit
         void   build_framebuffer();
         void   render_framebuffer();
 
-        void load_mesh(const std::string& mesh_file_path, const glm::mat4& localTransform = glm::mat4(1.0f));
+        void load_mesh
+        (
+            const std::string& mesh_file_path, 
+            const std::string& texture_file_path, 
+            const glm::mat4& localTransform = glm::mat4(1.0f)
+        );
         glm::vec3   random_color();
 
         void   configure_material(GLuint program_id);

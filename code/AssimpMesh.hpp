@@ -6,32 +6,47 @@
 #define ASSIMPMESH_HEADER
 
     #pragma once
-
     #include "Mesh.hpp"
-    #include <assimp/scene.h>
-    #include <vector>
+    #include <string>
+    #include <glm.hpp>
+    #include <glad/glad.h>
 
     namespace udit 
     {
+
         class AssimpMesh : public Mesh 
         {
         public:
-            // Aquí guardas tus IDs
-            enum
+            enum 
             { 
-                COORD_VBO = 0, 
-                NORMAL_VBO, 
-                UV_VBO, 
-                INDICES_EBO, 
+                COORD_VBO, 
+                NORMAL_VBO,
+                UV_VBO,
+                INDICES_EBO,
                 VBO_COUNT 
             };
 
-            GLuint vbo_ids[VBO_COUNT];
             GLuint vao_id;
+            GLuint vbo_ids[VBO_COUNT];
             GLsizei number_of_indices = 0;
+
+            // Nueva parte:
+            /// Ruta a la textura que queramos usar para este mesh
+            void setTexturePath(const std::string& path) { texturePath = path; }
+            void setTextureID(GLuint id) { textureID = id; }
+
+            AssimpMesh() : textureID(0) {}
+            ~AssimpMesh() 
+            {
+                if (textureID) glDeleteTextures(1, &textureID);
+            }
 
             void load(const std::string& mesh_file_path) override;
             void draw(const glm::mat4& modelMatrix, GLuint shaderProgram) const override;
+
+        private:
+            std::string texturePath;
+            GLuint      textureID = 0;
         };
 
     }
