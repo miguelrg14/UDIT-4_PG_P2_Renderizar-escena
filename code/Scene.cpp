@@ -26,6 +26,7 @@
 #include "opengl-recipes.hpp"
 
 #include "AssimpMesh.hpp"
+#include <fstream>
 
 using namespace std;
 using namespace glm;
@@ -131,13 +132,13 @@ namespace udit
                     discard;    // desaparece en la niebla
                 }
 
-                vec4 texcol = texture(sampler, texture_uv);             // 1) Muestreamos la textura (rgba)
+                vec4 texcol = texture(sampler, texture_uv);             // 1) Muestrea la textura (rgba)
 
                 vec3 littex = front_color * texcol.rgb;                 // 2) Iluminación * textura.rgb
 
                 vec3 final_rgb   = mix(littex, fog_color, fog_factor);  // 3) Mezcla RGB con el color de la niebla
 
-                float final_alpha = texcol.a * (0.5 - fog_factor);      // 4) Atenuar el αlpha original según la niebla
+                float final_alpha = texcol.a * (0.5 - fog_factor);      // 4) Atenuar el alpha original según la niebla
 
                 fragment_color = vec4(final_rgb, final_alpha);          // Resultado final: color + transparencia progresiva
 
@@ -304,10 +305,10 @@ namespace udit
 
         resize(width, height);
 
-        load_mesh("../assets/Terreno.obj", "../assets/Stone_Base_Color.png", glm::translate(glm::mat4(1.0f), glm::vec3(15.0f, 0.0f, 0.0f)));
-        load_mesh("../assets/Painting.obj", "../assets/Frame1.jpg", glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -3.0f)));
-        load_mesh("../assets/Plant.obj", "../assets/plant1_Material.001_BaseColor.png", glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f, -1.0f, 0.0f)));
-        load_mesh("../assets/Umbrella.obj", "../assets/Paraguas_DefaultMaterial_BaseColor.png", glm::translate(glm::mat4(1.0f), glm::vec3(-15.0f, 0.0f, 0.0f)));
+        load_mesh("../assets/Terreno.obj" , "../assets/Stone_Base_Color.png",                   glm::translate(glm::mat4(1.0f), glm::vec3( 15.0f,  0.0f,  0.0f)));
+        load_mesh("../assets/Painting.obj", "../assets/Frame1.jpg",                             glm::translate(glm::mat4(1.0f), glm::vec3( 10.0f,  0.0f, -3.0f)));
+        load_mesh("../assets/Plant.obj"   , "../assets/plant1_Material.001_BaseColor.png",      glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f, -1.0f,  0.0f)));
+        load_mesh("../assets/Umbrella.obj", "../assets/Paraguas_DefaultMaterial_BaseColor.png", glm::translate(glm::mat4(1.0f), glm::vec3(-15.0f,  0.0f,  0.0f)));
     }
 
     Scene::~Scene()
@@ -339,16 +340,16 @@ namespace udit
         glViewport(0, 0, framebuffer_width, framebuffer_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+        /// 1.2) Precálculo de las matrices de cámara
+        const glm::mat4              view = camera.get_transform_matrix_inverse();
+        const glm::mat4 camera_projection = camera.get_projection_matrix();
         /// 1.1) Skybox (dibujar siempre al fondo)
         glDepthMask(GL_FALSE);
         glDepthFunc(GL_LEQUAL);
         skybox.render(camera);
         glDepthMask(GL_TRUE);
         glDepthFunc(GL_LESS);
-
-        /// 1.2) Precálculo de las matrices de cámara
-        const glm::mat4              view = camera.get_transform_matrix_inverse();
-        const glm::mat4 camera_projection = camera.get_projection_matrix();
 
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
@@ -367,16 +368,12 @@ namespace udit
         // Dibujado de la malla de terreno
         terrain.render();
         ///
-        // 1.3.2) Espiral
-        glm::mat4 model_spiral = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -10.0f));
-        spiral.render(camera, model_spiral);
-        ///
 
         // 1.4) Objetos opacos (cube u otros meshes)
         glUseProgram(program_id);
 
         /// Bind de textura difusa si existe
-        if (there_is_texture) 
+        if (there_is_texture)
         {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -391,17 +388,7 @@ namespace udit
         glBindVertexArray(vao_id);
         glDrawElements(GL_TRIANGLES, number_of_indices, GL_UNSIGNED_SHORT, nullptr);
 
-        /// Cubo de Rubik
-        //glm::mat4         model_rubik = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f));
-        //rubik.render(view, camera_projection, model_rubik, model_view_matrix_id, normal_matrix_id, material_color_id, program_id);
-        //
-        //// Rotaciones
-        //rubik.rotate_row(+1.0f,  1.0f); // Capa superior (Y = +1, rota un grado por frame)
-        //rubik.rotate_row( 0.0f,  0.0f); // Capa central
-        //rubik.rotate_row(-1.0f, -1.0f); // Capa inferior
-        ///
-
-        /// Esfera
+        /// Cubos rotando
         glm::mat4      model_sphere = glm::translate (glm::mat4(1.0f), glm::vec3(-10.0f, 0.0f, -10.0f)) * glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 model_view_sphere = view * model_sphere;
         glm::mat4     normal_sphere = glm::transpose (glm::inverse(model_view_sphere));
@@ -409,7 +396,7 @@ namespace udit
         glUniformMatrix4fv (model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_sphere));
         glUniformMatrix4fv (    normal_matrix_id, 1, GL_FALSE, glm::value_ptr(normal_sphere    ));
 
-        sphere.render();
+        cube.render();
 
         // Esfera 2
         glm::mat4   model_view_sphere2(1);
@@ -422,8 +409,8 @@ namespace udit
 
         glUniformMatrix4fv(model_view_matrix_id, 1, GL_FALSE, glm::value_ptr(model_view_sphere2));
 
-        sphere.render();
-        /// Esfera
+        cube.render();
+        /// Cubos rotando
 
         /// 1.5) Objetos transparentes (tal como ya lo tenías)
         glEnable(GL_BLEND);
@@ -608,17 +595,31 @@ namespace udit
     {
         auto mesh = std::make_shared<AssimpMesh>();
 
-        // --- Carga aquí la textura y pásasela al mesh:
-        GLuint tex = create_texture_2d<GLuint>(texture_file_path);
-        if (tex == GLuint(-1)) 
+        // Comprobar existencia intentando abrir un ifstream
+        std::ifstream texFile(texture_file_path);
+        if (texFile.is_open())
         {
-            std::cerr << "[Scene] error cargando textura: " << texture_file_path << "\n";
+            texFile.close();  // existe → la cerramos y cargamos
+            GLuint tex = create_texture_2d<GLuint>(texture_file_path);
+            if (tex == GLuint(-1)) 
+            {
+                std::cerr << "[Scene] fallo en create_texture_2d: " << texture_file_path << "\n";
+            }
+            else 
+            {
+                mesh->setTextureID(tex);
+                std::cout << "[Scene] textura cargada: ID=" << tex << " (" << texture_file_path << ")\n";
+            }
         }
-        mesh->setTextureID(tex);
+        else
+        {
+            std::cerr << "[Scene] NO existe la textura: " << texture_file_path << "\n";
+        }
 
-        // --- Ahora carga solo la geometría:
+        // Cargar geometría (con try/catch si quieres)
         mesh->load(mesh_file_path);
 
+        // Añadir al grafo
         auto node = std::make_unique<SceneNode>();
         node->addMesh(mesh);
         node->localTransform = localTransform;

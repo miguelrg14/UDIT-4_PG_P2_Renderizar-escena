@@ -15,10 +15,6 @@
 #include "Cube.hpp"
 #include "Terrain.hpp"
 
-#include "Spiral.hpp"
-#include "Rubik.hpp"
-#include "Sphere.hpp"
-
 #include "SceneNode.hpp"
 
 namespace udit
@@ -43,8 +39,8 @@ namespace udit
         };
 
         // Postprocesado: Reescalado de la pantalla con framebuffer
-        static const GLsizei  framebuffer_width = 256; // 256; // 1024;
-        static const GLsizei framebuffer_height = 256; // 256; // 1024;
+        GLsizei  framebuffer_width = 256; // 256; // 1024;
+        GLsizei framebuffer_height = 256; // 256; // 1024;
 
         static const std::string          vertex_shader_code;
         static const std::string        fragment_shader_code;
@@ -76,8 +72,6 @@ namespace udit
         Terrain terrain;
 
         Cube  cube;
-        Rubik rubik;
-        Sphere sphere;
 
         float angle;
 
@@ -111,7 +105,6 @@ namespace udit
         /// Cámara
         Camera camera;
         Skybox skybox;
-        Spiral spiral;
 
         Scene(unsigned width, unsigned height);
         ~Scene();

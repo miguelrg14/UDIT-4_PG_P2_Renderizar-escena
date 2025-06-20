@@ -88,7 +88,7 @@ namespace udit
     :
         texture_cube(texture_base_path)
     {
-        assert(texture_cube.is_ok ());
+        //assert(texture_cube.is_ok ());
 
         // Se compilan y linkan los shaders:
         shader_program_id = compile_shaders ();

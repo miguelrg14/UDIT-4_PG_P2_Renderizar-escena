@@ -69,28 +69,7 @@
     <ClInclude Include="..\code\Cube.hpp">
       <Filter>Archivos de encabezado\Formas Geométricas</Filter>
     </ClInclude>
-    <ClInclude Include="..\code\Cone.hpp">
-      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\Cylinder.hpp">
-      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\Plane.hpp">
-      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\Spiral.hpp">
-      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
-    </ClInclude>
     <ClInclude Include="..\code\Terrain.hpp">
-      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\Rubik.hpp">
-      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\CubeFace.hpp">
-      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
-    </ClInclude>
-    <ClInclude Include="..\code\Sphere.hpp">
       <Filter>Archivos de encabezado\Formas Geométricas</Filter>
     </ClInclude>
     <ClInclude Include="..\code\Mesh.hpp">
@@ -125,28 +104,7 @@
     <ClCompile Include="..\code\Cube.cpp">
       <Filter>Archivos de recursos\Formas Geométricas</Filter>
     </ClCompile>
-    <ClCompile Include="..\code\Cone.cpp">
-      <Filter>Archivos de recursos\Formas Geométricas</Filter>
-    </ClCompile>
-    <ClCompile Include="..\code\Cylinder.cpp">
-      <Filter>Archivos de recursos\Formas Geométricas</Filter>
-    </ClCompile>
-    <ClCompile Include="..\code\Plane.cpp">
-      <Filter>Archivos de recursos\Formas Geométricas</Filter>
-    </ClCompile>
-    <ClCompile Include="..\code\Spiral.cpp">
-      <Filter>Archivos de recursos\Formas Geométricas</Filter>
-    </ClCompile>
     <ClCompile Include="..\code\Terrain.cpp">
-      <Filter>Archivos de recursos\Formas Geométricas</Filter>
-    </ClCompile>
-    <ClCompile Include="..\code\Rubik.cpp">
-      <Filter>Archivos de recursos\Formas Geométricas</Filter>
-    </ClCompile>
-    <ClCompile Include="..\code\CubeFace.cpp">
-      <Filter>Archivos de recursos\Formas Geométricas</Filter>
-    </ClCompile>
-    <ClCompile Include="..\code\Sphere.cpp">
       <Filter>Archivos de recursos\Formas Geométricas</Filter>
     </ClCompile>
     <ClCompile Include="..\code\AssimpMesh.cpp">
