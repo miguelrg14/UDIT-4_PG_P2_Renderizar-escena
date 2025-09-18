@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #pragma once
 
@@ -11,8 +11,11 @@
 #include "Color.hpp"
 #include "Color_Buffer.hpp"
 #include "Camera.hpp"
+#include "Skybox.hpp"
 #include "Cube.hpp"
-//#include "Terrain.hpp"
+#include "Terrain.hpp"
+
+#include "SceneNode.hpp"
 
 namespace udit
 {
@@ -22,6 +25,9 @@ namespace udit
     private:
 
         typedef Color_Buffer< Rgba8888 > Color_Buffer;
+        //typedef Color_Buffer< Monochrome8 > Color_Buffer;
+
+        std::unique_ptr<SceneNode> rootNode;
 
         enum
         {
@@ -33,24 +39,37 @@ namespace udit
         };
 
         // Postprocesado: Reescalado de la pantalla con framebuffer
-        static const GLsizei  framebuffer_width = 1024; // 256;
-        static const GLsizei framebuffer_height = 1024; // 256;
+        GLsizei  framebuffer_width = 256; // 256; // 1024;
+        GLsizei framebuffer_height = 256; // 256; // 1024;
 
         static const std::string          vertex_shader_code;
         static const std::string        fragment_shader_code;
         static const std::string                texture_path;
+        static const std::string        texture_path_terrain;
         static const std::string   effect_vertex_shader_code;
         static const std::string effect_fragment_shader_code;
 
-        GLint   model_view_matrix_id;
-        GLint   projection_matrix_id;
-        GLint       normal_matrix_id;
-        GLuint        framebuffer_id;
-        GLuint        depthbuffer_id;
-        GLuint        out_texture_id;
+    public:
+        static const std::string terrain_vertex_shader_code;
+        static const std::string terrain_fragment_shader_code;
+
+    private:
+
+        GLuint terrain_program_id = 0;
+        GLuint height_texture_id = 0;
+
+        GLint           model_view_matrix_id;
+        GLint           projection_matrix_id;
+        GLint               normal_matrix_id;
+        GLint              material_color_id;
+        GLuint                framebuffer_id;
+        GLuint                depthbuffer_id;
+        GLuint                out_texture_id;
+        GLuint  terrain_projection_matrix_id;
+        GLuint  terrain_model_view_matrix_id;
 
         /// Terreno (Mallas de elevación)
-        //Terrain terrain;
+        Terrain terrain;
 
         Cube  cube;
 
@@ -85,13 +104,14 @@ namespace udit
 
         /// Cámara
         Camera camera;
+        Skybox skybox;
 
-        Scene (unsigned width, unsigned height);
-       ~Scene ();
+        Scene(unsigned width, unsigned height);
+        ~Scene();
 
-        void   update       ();
-        void   render       ();
-        void   resize       (unsigned width, unsigned height);
+        void   update();
+        void   render();
+        void   resize(unsigned width, unsigned height);
         //void   load_model   (const std::string& path);
 
     private:
@@ -100,16 +120,15 @@ namespace udit
         void   build_framebuffer();
         void   render_framebuffer();
 
-        void        show_compilation_error (GLuint  shader_id);
-        void        show_linkage_error     (GLuint program_id);
-        void        load_mesh              (const std::string& mesh_file_path);
-        glm::vec3   random_color           ();
+        void load_mesh
+        (
+            const std::string& mesh_file_path, 
+            const std::string& texture_file_path, 
+            const glm::mat4& localTransform = glm::mat4(1.0f)
+        );
+        glm::vec3   random_color();
 
-        void   configure_material (GLuint program_id);
-        void   configure_light    (GLuint program_id);
-
-        GLuint create_texture_2d(const std::string& texture_path);
-        std::unique_ptr< Color_Buffer > load_image(const std::string& image_path);
+        void   configure_material(GLuint program_id);
+        void   configure_light(GLuint program_id);
     };
-
 }

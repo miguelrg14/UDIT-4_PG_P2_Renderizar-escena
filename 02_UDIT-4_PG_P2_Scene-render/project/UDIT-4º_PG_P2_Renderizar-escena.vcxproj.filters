@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Archivos de origen">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Archivos de encabezado">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Archivos de recursos">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Otros">
+      <UniqueIdentifier>{fc276c53-a517-4fbc-a50b-e031a43ece16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\Otros">
+      <UniqueIdentifier>{4913cb49-fa64-48c5-bac0-d87604a30fc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Grafo">
+      <UniqueIdentifier>{2c58b151-4b6e-4c70-a544-b3a63dc2bcdd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Skybox">
+      <UniqueIdentifier>{090d612e-89ed-4575-a5d4-92d05ac148dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\Skybox">
+      <UniqueIdentifier>{968d94d6-fb11-414a-8227-b0734ffa006e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Formas Geométricas">
+      <UniqueIdentifier>{5bd6f99c-e7b3-473e-a0c4-90897770a99c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\Formas Geométricas">
+      <UniqueIdentifier>{cfcec140-53be-4fe7-b812-1db0e8400955}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\Grafo">
+      <UniqueIdentifier>{da664dac-e39d-45a3-b0c5-c20f46d21792}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\code\Scene.hpp">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Color.hpp">
+      <Filter>Archivos de encabezado\Otros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Color_Buffer.hpp">
+      <Filter>Archivos de encabezado\Otros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\opengl-recipes.hpp">
+      <Filter>Archivos de encabezado\Otros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\SceneNode.hpp">
+      <Filter>Archivos de encabezado\Grafo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Window.hpp">
+      <Filter>Archivos de encabezado\Otros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Camera.hpp">
+      <Filter>Archivos de encabezado\Otros</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Skybox.hpp">
+      <Filter>Archivos de encabezado\Skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Texture_Cube.hpp">
+      <Filter>Archivos de encabezado\Skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Cube.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Terrain.hpp">
+      <Filter>Archivos de encabezado\Formas Geométricas</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\Mesh.hpp">
+      <Filter>Archivos de encabezado\Grafo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\code\AssimpMesh.hpp">
+      <Filter>Archivos de encabezado\Grafo</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\code\main.cpp">
+      <Filter>Archivos de recursos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Scene.cpp">
+      <Filter>Archivos de recursos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\opengl-recipes.cpp">
+      <Filter>Archivos de recursos\Otros</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Window.cpp">
+      <Filter>Archivos de recursos\Otros</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Skybox.cpp">
+      <Filter>Archivos de recursos\Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Texture_Cube.cpp">
+      <Filter>Archivos de recursos\Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Camera.cpp">
+      <Filter>Archivos de recursos\Otros</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Cube.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\Terrain.cpp">
+      <Filter>Archivos de recursos\Formas Geométricas</Filter>
+    </ClCompile>
+    <ClCompile Include="..\code\AssimpMesh.cpp">
+      <Filter>Archivos de recursos\Grafo</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

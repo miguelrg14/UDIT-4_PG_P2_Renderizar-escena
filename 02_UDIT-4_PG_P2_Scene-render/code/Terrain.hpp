@@ -1,6 +1,6 @@
 
 // Este código es de dominio público
-// angel.rodriguez@udit.es
+// Miguel Rodríguez Gallego
 
 #ifndef GROUND_HEADER
 #define GROUND_HEADER
@@ -15,7 +15,6 @@
         private:
 
             // Índices para indexar el array vbo_ids:
-
             enum
             {
                 COORDINATES_VBO,
